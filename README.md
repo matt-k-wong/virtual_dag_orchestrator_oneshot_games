@@ -1,75 +1,140 @@
 # Virtual DAG Orchestrator - One-Shot Game Generation
 
-This project benchmarks AI models on their ability to generate complete, playable Python games in a single shot using a DAG orchestrator workflow.
+This repo benchmarks whether a single model response can produce a complete, playable Python game by simulating an orchestrated multi-step build pipeline inside one prompt.
 
-## Overview
+The core idea is simple: instead of asking a model to "just write the game", the prompt makes it behave like a full orchestrator. It first refines intent, writes a spec, constructs a dependency-aware DAG, critiques that DAG, writes node prompts, virtually executes those nodes in memory, reviews the integrated build, and only then emits the final single-file game.
 
-The prompt system ("GOD MODE ONE-SHOT GAME DEV") instructs an AI to:
-1. Refine game intent into a spec
-2. Create a dependency-aware DAG for game generation
-3. Execute each node (planning, spec, architecture, generation, review, integration)
-4. Output a final single-file Python game that's actually playable
+## What "Virtual Orchestrator" Means
+
+A true orchestrator would make many separate model calls:
+
+1. One call writes intent.
+2. Another writes the spec.
+3. Others generate subsystems in parallel.
+4. Review nodes inspect intermediate artifacts.
+5. An integration step merges outputs.
+6. Final QA and hardening happen after that.
+
+This repo does not do that with actual external orchestration infrastructure. Instead, the prompt asks one sufficiently capable model to simulate that whole workflow internally in a single response.
+
+That is why this is a virtual DAG orchestrator:
+
+- The DAG is real as a planning artifact.
+- The node prompts are real and self-contained.
+- The execution log is virtual rather than backed by separate API calls.
+- The model is effectively role-playing planner, generator, reviewer, integrator, and QA in one large context window.
+
+## Why This Often Works Better Than A Plain Prompt
+
+The virtual orchestrator forces the model to spend tokens on:
+
+- intent clarification
+- concrete success criteria
+- dependency planning
+- subsystem decomposition
+- adversarial review
+- integration checks
+- final hardening
+
+That extra structure usually improves one-shot quality. In practice, it increases the odds that the final game is actually runnable, coherent, and polished instead of collapsing into partial code, loose ideas, or missing systems.
+
+The tradeoff is straightforward: it uses more tokens. You are paying context and output budget for planning and self-critique in exchange for a better chance of getting a stronger first-pass result.
+
+## How Close This Gets To A True Orchestrator
+
+For strong large-context frontier models, this virtual approach probably gets around 95-97% of what a true orchestrator would deliver for this specific one-shot use case.
+
+Why not 100%?
+
+- A real orchestrator can run genuinely separate node executions.
+- It can branch, retry, and re-run only failed steps.
+- It can use specialized models per node.
+- It can validate intermediate artifacts programmatically.
+- It can preserve cleaner separation between planning, generation, review, and integration.
+
+So the true orchestrator is still better in principle. The gap becomes more important when you use smaller models, because smaller models are much less reliable at holding this entire simulated pipeline in memory at once. A real orchestrator helps those smaller models more because it externalizes memory, decomposition, and retries instead of demanding that everything stay coherent inside one huge answer.
+
+## Prompt Templates
+
+There are two top-level prompt files:
+
+- [2d_prompt.md](/Users/granite/virtual_dag_orchestrator_oneshot_games/2d_prompt.md)
+- [3d_prompt.md](/Users/granite/virtual_dag_orchestrator_oneshot_games/3d_prompt.md)
+
+They are nearly identical by design. The orchestration method is the same in both. The main difference is the target game brief:
+
+- `2d_prompt.md` targets a 2D space shooter
+- `3d_prompt.md` targets a 3D flight sim
+
+Everything else stays mostly constant so the benchmark is testing model capability, not wildly different prompt engineering strategies.
+
+## Prompt Pipeline
+
+Each prompt instructs the model to produce output in this rough order:
+
+1. `intent.md`
+2. `spec.md`
+3. a full orchestrator-ready DAG
+4. a hostile DAG review with fixes
+5. self-contained prompts for every DAG node
+6. a virtual DAG execution log
+7. final integration notes
+8. a brutal adversarial review of the integrated game
+9. the final runnable single-file Python game
+10. short run instructions
+11. a final quality verdict
+
+This sequencing matters. It pushes the model to decide what it is building before it writes code, and to inspect likely failure points before it commits to the final output.
 
 ## Project Structure
 
-```
+```text
 .
-├── 2d/                      # 2D space shooter games
-│   ├── 2d_chatgpt5.4.py
-│   ├── 2d_claude_sonnet_4.6.py
-│   ├── 2d_gemini.py
-│   ├── 2d_grok.py
-│   ├── 2d_minimax2.7.py
-│   ├── 2d_nemotron-3-super-120b-a12b.py
-│   └── 2d_qwen3.5-397b-a17b.py
-├── 3d/                      # 3D flight simulator games
-│   ├── 3d_chatgpt_extended.py
-│   ├── 3d_chatgpt_free.py
-│   ├── 3d_claude_sonnet_4.6.py
-│   ├── 3d_gemini.py
-│   ├── 3d_gemma-4-31b-it.py
-│   ├── 3d_grok.py
-│   ├── 3d_minimax-m2.7.py
-│   ├── 3d_nemotron-3-super-120b-a12b.py
-│   └── 3d_qwen3.5-397b-a17b.py
-├── 2d_prompt.md             # Prompt used for 2D space shooter
-├── 3d_prompt.md             # Prompt used for 3D flight sim
-├── LICENSE                  # MIT License
-└── README.md                # This file
+├── 2d/                      # Generated 2D games from different models
+├── 3d/                      # Generated 3D games from different models
+├── 2d_prompt.md             # Virtual orchestrator prompt for 2D space shooters
+├── 3d_prompt.md             # Virtual orchestrator prompt for 3D flight sims
+├── LICENSE
+└── README.md
 ```
 
-## Running the Games
+## Running The Games
 
 ### Prerequisites
 
 - Python 3.10+
-- pygame (or pygame-ce)
+- `pygame-ce` or `pygame`
 
 ### Quick Start
 
 ```bash
-# Install pygame if needed
 pip install pygame-ce pygame
 
-# Run any game
 python 2d/2d_claude_sonnet_4.6.py
-python 3d/3d_claude_sonnet_4.6.py
+python 3d/3d_gemini.py
 ```
 
-Each game is self-contained in a single Python file with auto-install logic for pygame if not present.
+Most generated files are self-contained single-file games. Many also include minimal auto-install bootstrap logic for `pygame-ce` or `pygame`.
 
 ### Controls
 
-Each game may have different controls. On-screen instructions are provided in-game.
+Controls vary by generated game. Most builds include on-screen instructions or obvious keyboard defaults.
 
-## Prompt Versions
+## What This Repo Is Testing
 
-- **2d_prompt.md**: Generates a 2D top-down space shooter
-- **3d_prompt.md**: Generates a 3D flight simulator
+This benchmark is mainly testing whether a model can:
 
-Both prompts are nearly identical except for the game type specification.
+1. follow a deep structured generation workflow
+2. keep multiple intermediate artifacts coherent in one context
+3. produce complete runnable code instead of placeholders
+4. generate gameplay, feedback, progression, and HUD in one shot
+5. survive adversarial self-review without losing the final implementation
 
-## Models Tested
+It is not a perfect substitute for a real orchestrator system. It is a practical approximation that deliberately spends more tokens to buy higher one-shot reliability and output quality.
+
+## Models In The Repo
+
+The repo includes outputs from models such as:
 
 - ChatGPT 5.4
 - Claude Sonnet 4.6
@@ -80,10 +145,8 @@ Both prompts are nearly identical except for the game type specification.
 - Qwen 3.5 397B A17B
 - Gemma 4 31B IT
 
-## Purpose
+## Practical Takeaway
 
-This benchmark tests whether AI models can:
-1. Follow a complex multi-step orchestration workflow
-2. Produce complete, runnable code (not pseudocode or placeholders)
-3. Generate games with proper game loops, collisions, win/lose states, and polish
-4. Work within constraints (single file, procedural graphics, no external assets)
+If you have a strong model with a large context window, a virtual orchestrator prompt is often enough to get most of the upside of orchestration without building orchestration infrastructure.
+
+If you want maximum reliability, retries, tool use, intermediate validation, or stronger performance from smaller models, a true orchestrator is still the better system design.
