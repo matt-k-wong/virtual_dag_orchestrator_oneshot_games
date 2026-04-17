@@ -132,6 +132,53 @@ This benchmark is mainly testing whether a model can:
 
 It is not a perfect substitute for a real orchestrator system. It is a practical approximation that deliberately spends more tokens to buy higher one-shot reliability and output quality.
 
+## Results Pattern
+
+The generated games have a very strong shared signature. Across models, the most successful one-shotted outputs converge on the same high-reward arcade formula:
+
+- heavy neon palettes with cyan, magenta, purple, and bright white accents
+- aggressive particles for explosions, trails, engine glow, and impact feedback
+- screen shake on damage and big events
+- glow effects built from alpha surfaces, additive layering, or bright overlapping primitives
+- responsive movement, dash, or boost-heavy control schemes
+
+This is one of the clearest findings in the repo: neon plus particles plus shake plus fast controls is an extremely effective cheat code for making a simple game feel much more expensive than it really is. Models seem to converge on it because it produces a high level of perceived polish for relatively low implementation complexity.
+
+## Standout Outputs
+
+Some files stand out for different reasons:
+
+- [2d/2d_claude_sonnet_4.6.py](/Users/granite/virtual_dag_orchestrator_oneshot_games/2d/2d_claude_sonnet_4.6.py): strongest overall 2D result. It has the best mix of production value, enemy variety, pickups, visual polish, and code readability.
+- [2d/2d_chatgpt5.4.py](/Users/granite/virtual_dag_orchestrator_oneshot_games/2d/2d_chatgpt5.4.py): most feature-rich 2D build. It pushes progression, weapon evolution, HUD depth, and enemy behavior density harder than most of the set.
+- [3d/3d_grok.py](/Users/granite/virtual_dag_orchestrator_oneshot_games/3d/3d_grok.py): most ambitious 3D implementation. It gets closest to feeling like a real 3D game by leaning into actual 3D math, rotations, and camera behavior.
+- [3d/3d_chatgpt_extended.py](/Users/granite/virtual_dag_orchestrator_oneshot_games/3d/3d_chatgpt_extended.py): most complex single-file build. It is extremely long and dense, and it tries to act like a full mini-game rather than a narrow prototype.
+- [2d/2d_gemini.py](/Users/granite/virtual_dag_orchestrator_oneshot_games/2d/2d_gemini.py): simplest elegant result. It is cleaner and easier to read than many of the larger outputs while still being fun to play.
+
+## What The Models Seem To Optimize For
+
+The outputs suggest different default strengths:
+
+- Claude tends to be strongest at polish, readability, and moment-to-moment game feel.
+- Grok tends to be the most technically ambitious, especially when the task rewards explicit spatial or 3D reasoning.
+- ChatGPT tends to add more systems, more upgrades, and more feature density.
+- Gemini tends to produce cleaner, simpler, and more readable implementations.
+
+These are not universal laws, but they are visible patterns in this repo.
+
+## Main Lesson From The Games
+
+The best one-shotted games do not just add more code or more enemy count. The strongest outputs give enemies distinct personalities, add progression or pickup systems, and create enough juice that the game feels good immediately.
+
+That matters because these prompts are trying to achieve a polished vertical slice in one pass, not an engine or framework. The repo suggests that a one-shot game becomes convincing when it has:
+
+- clear movement and combat readability
+- immediate audiovisual feedback
+- obvious escalation
+- at least light progression or upgrade structure
+- enemies that behave differently enough to create texture
+
+In other words, the universal lesson here is not just that LLMs can write arcade games in one shot. It is that they can get surprisingly close to "feels good" if the prompt steers them toward high-leverage polish patterns.
+
 ## Models In The Repo
 
 The repo includes outputs from models such as:
