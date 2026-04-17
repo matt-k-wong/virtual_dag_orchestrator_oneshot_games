@@ -4,6 +4,8 @@ This repo benchmarks whether a single model response can produce a complete, pla
 
 The core idea is simple: instead of asking a model to "just write the game", the prompt makes it behave like a full orchestrator. It first refines intent, writes a spec, constructs a dependency-aware DAG, critiques that DAG, writes node prompts, virtually executes those nodes in memory, reviews the integrated build, and only then emits the final single-file game.
 
+The inspiration for this approach came from [Bijan Bowen](https://www.youtube.com/@Bijanbowen).
+
 ## What "Virtual Orchestrator" Means
 
 A true orchestrator would make many separate model calls:
